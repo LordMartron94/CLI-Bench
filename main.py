@@ -10,6 +10,9 @@ from typing import List
 GO_MODULE_BASE: Path = Path(__file__).parent.parent.joinpath("components")
 BENCHMARK_RESULTS_BASE: Path = Path(__file__).parent.parent.joinpath("components").joinpath("benchmarks").joinpath("results")
 
+__package__ = __name__
+CURRENT_PACKAGE = __package__
+
 base_common_dir = "_internal.common.md_py_common.py_common"
 
 command_handling_package = base_common_dir + ".command_handling"
@@ -18,10 +21,10 @@ cli_package = base_common_dir + ".cli_framework"
 file_handler_package = base_common_dir + ".handlers"
 
 # Import the module
-logger_module = importlib.import_module(logger_package)
-command_handling_module = importlib.import_module(command_handling_package)
-cli_module = importlib.import_module(cli_package)
-file_handler_module = importlib.import_module(file_handler_package)
+logger_module = importlib.import_module(logger_package, package=CURRENT_PACKAGE)
+command_handling_module = importlib.import_module(command_handling_package, package=CURRENT_PACKAGE)
+cli_module = importlib.import_module(cli_package, package=CURRENT_PACKAGE)
+file_handler_module = importlib.import_module(file_handler_package, package=CURRENT_PACKAGE)
 
 HoornLogger = logger_module.HoornLogger
 LogType = logger_module.LogType
