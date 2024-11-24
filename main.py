@@ -1,11 +1,16 @@
 # -*- coding: utf-8 -*-
 
 import asyncio
-import importlib
+# import importlib
 import os
 import time
 from pathlib import Path
 from typing import List
+
+from cli_bench.common.py_common.cli_framework import CommandLineInterface
+from cli_bench.common.py_common.command_handling import CommandHelper
+from cli_bench.common.py_common.handlers import FileHandler
+from cli_bench.common.py_common.logging import HoornLogger, DefaultHoornLogOutput, LogType
 
 GO_MODULE_BASE: Path = Path(__file__).parent.parent.joinpath("components")
 BENCHMARK_RESULTS_BASE: Path = Path(__file__).parent.parent.joinpath("components").joinpath("benchmarks").joinpath("results")
@@ -13,24 +18,24 @@ BENCHMARK_RESULTS_BASE: Path = Path(__file__).parent.parent.joinpath("components
 __package__ = __name__
 CURRENT_PACKAGE = __package__
 
-base_common_dir = "_internal.common.md_py_common.py_common"
-
-command_handling_package = base_common_dir + ".command_handling"
-logger_package = base_common_dir + ".logging"
-cli_package = base_common_dir + ".cli_framework"
-file_handler_package = base_common_dir + ".handlers"
+# base_common_dir = "_internal.common.md_py_common.py_common"
+#
+# command_handling_package = base_common_dir + ".command_handling"
+# logger_package = base_common_dir + ".logging"
+# cli_package = base_common_dir + ".cli_framework"
+# file_handler_package = base_common_dir + ".handlers"
 
 # Import the module
-logger_module = importlib.import_module(logger_package, package=CURRENT_PACKAGE)
-command_handling_module = importlib.import_module(command_handling_package, package=CURRENT_PACKAGE)
-cli_module = importlib.import_module(cli_package, package=CURRENT_PACKAGE)
-file_handler_module = importlib.import_module(file_handler_package, package=CURRENT_PACKAGE)
-
-HoornLogger = logger_module.HoornLogger
-LogType = logger_module.LogType
-DefaultHoornLogOutput = logger_module.DefaultHoornLogOutput
-CLIInterface = cli_module.CommandLineInterface
-FileHandler = file_handler_module.FileHandler
+# logger_module = importlib.import_module(logger_package, package=CURRENT_PACKAGE)
+# command_handling_module = importlib.import_module(command_handling_package, package=CURRENT_PACKAGE)
+# cli_module = importlib.import_module(cli_package, package=CURRENT_PACKAGE)
+# file_handler_module = importlib.import_module(file_handler_package, package=CURRENT_PACKAGE)
+#
+# HoornLogger = logger_module.HoornLogger
+# LogType = logger_module.LogType
+# DefaultHoornLogOutput = logger_module.DefaultHoornLogOutput
+# CLIInterface = cli_module.CommandLineInterface
+# FileHandler = file_handler_module.FileHandler
 
 #TODO - CLEAN UP CODE
 
@@ -234,8 +239,8 @@ def run_pprof_web_command(command_handler, file_helper):
 
 if __name__ == "__main__":
 	logger = HoornLogger(min_level=LogType.DEBUG, outputs=[DefaultHoornLogOutput()])
-	command_handler = command_handling_module.CommandHelper(logger)
-	cli_interface = CLIInterface(logger)
+	command_handler = CommandHelper(logger)
+	cli_interface = CommandLineInterface(logger)
 	file_handler = FileHandler()
 
 	cli_interface.add_command(["benchmark", "bm"], action=benchmark_command, description="Starts the benchmarking.", arguments=[command_handler])
