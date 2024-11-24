@@ -1,0 +1,16 @@
+{
+  "sender_id": "ea1973db-31e7-4fe4-bd57-e217f246f6a1",
+  "payload": {
+    "action": "register",
+    "args": [
+      {
+        "type": "string",
+        "value": "Common.Logger"
+      },
+      {
+        "type": "string",
+        "value": "1.0.0"
+      }
+    ]
+  }
+}
