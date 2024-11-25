@@ -1,12 +1,12 @@
-from cli_bench.common.py_common.cli_framework import CommandLineInterface
-from cli_bench.common.py_common.command_handling import CommandHelper
-from cli_bench.common.py_common.handlers import FileHandler
-from cli_bench.common.py_common.logging import HoornLogger
-from cli_bench.go.commands.benchstat_command import BenchstatCommand
-from cli_bench.go.commands.go_command_context import GoCommandContext
-from cli_bench.go.commands.pprof_interactable_command import PprofInteractableCommand
-from cli_bench.go.commands.pprof_web_command import PprofWebCommand
-from cli_bench.go.commands.standard_benchmark_command import StandardBenchmarkCommand
+from ..common.py_common.cli_framework import CommandLineInterface
+from ..common.py_common.command_handling import CommandHelper
+from ..common.py_common.handlers import FileHandler
+from ..common.py_common.logging import HoornLogger
+from .commands.benchstat_command import BenchstatCommand
+from .commands.go_command_context import GoCommandContext
+from .commands.pprof_interactable_command import PprofInteractableCommand
+from .commands.pprof_web_command import PprofWebCommand
+from .commands.standard_benchmark_command import StandardBenchmarkCommand
 
 
 class GolangCLI:

@@ -1,6 +1,6 @@
 from abc import abstractmethod
 
-from cli_bench.common.py_common.logging import HoornLogger
+from .common.py_common.logging import HoornLogger
 
 
 class IBenchmarkCommand:

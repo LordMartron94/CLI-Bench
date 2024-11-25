@@ -1,11 +1,11 @@
 from pathlib import Path
 from typing import List
 
-from cli_bench.benchmark_command_interface import IBenchmarkCommand
-from cli_bench.common.py_common.command_handling import CommandHelper
-from cli_bench.common.py_common.handlers import FileHandler
-from cli_bench.common.py_common.logging import HoornLogger
-from cli_bench.go.commands.go_command_context import GoCommandContext
+from ...benchmark_command_interface import IBenchmarkCommand
+from ...common.py_common.command_handling import CommandHelper
+from ...common.py_common.handlers import FileHandler
+from ...common.py_common.logging import HoornLogger
+from .go_command_context import GoCommandContext
 
 
 class PprofInteractableCommand(IBenchmarkCommand):
