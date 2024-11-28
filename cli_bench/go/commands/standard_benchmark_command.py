@@ -11,7 +11,7 @@ from ...utils.command_tools import CommandTools
 
 class StandardBenchmarkCommand(AbGoBenchmarkCommand):
 	def __init__(self, logger: HoornLogger, command_tools: CommandTools, command_context: GoCommandContext):
-		super().__init__(logger, command_tools, command_context)
+		super().__init__(logger, command_tools, command_context, is_child=True)
 
 	def _validate_files(self, go_files: List[Path]) -> bool:
 		if len(go_files) == 0:

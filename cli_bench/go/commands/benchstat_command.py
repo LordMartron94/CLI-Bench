@@ -10,7 +10,7 @@ from ...utils.command_tools import CommandTools
 
 class BenchstatCommand(AbGoBenchmarkCommand):
 	def __init__(self, logger: HoornLogger, command_tools: CommandTools, command_context: GoCommandContext):
-		super().__init__(logger, command_tools, command_context)
+		super().__init__(logger, command_tools, command_context, is_child=True)
 
 	def run(self) -> None:
 		async def run_benchstat_compare():

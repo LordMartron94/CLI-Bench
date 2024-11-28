@@ -9,7 +9,7 @@ from ...utils.command_tools import CommandTools
 
 class PprofInteractableCommand(AbGoBenchmarkCommand):
 	def __init__(self, logger: HoornLogger, command_tools: CommandTools, command_context: GoCommandContext):
-		super().__init__(logger, command_tools, command_context)
+		super().__init__(logger, command_tools, command_context, is_child=True)
 
 	def _validate_paths(self, exes: List[Path]) -> bool:
 		if len(exes) == 0:
