@@ -36,11 +36,11 @@ class StandardBenchmarkCommand(IBenchmarkCommand):
 				return
 
 			choice = self._get_benchmark_choice(go_files)
-			output_name = self._user_input_helper.get_user_input("Enter the output name for the benchmark results:", expected_response_type=str, validator_func=lambda x: True)
+			output_name = self._user_input_helper.get_user_input("Enter the output name for the benchmark results:", expected_response_type=str, validator_func=lambda x: [True, ""])
 
 			benchmark_file = self._command_context.benchmarks_path.joinpath(choice.name)
 
-			desired_count = self._user_input_helper.get_user_input("Enter the number of times to run the benchmark (leave empty for 10):", expected_response_type=str, validator_func=lambda x: True)
+			desired_count = self._user_input_helper.get_user_input("Enter the number of times to run the benchmark (leave empty for 10):", expected_response_type=str, validator_func=lambda x: [True, ""])
 			desired_count = int(desired_count) if desired_count else 10
 
 			commands = [
