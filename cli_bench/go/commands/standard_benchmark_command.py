@@ -1,25 +1,17 @@
 import asyncio
 import os
-import time
 from pathlib import Path
 from typing import List
 
-from ...common.py_common.command_handling import CommandHelper
-from ...common.py_common.handlers import FileHandler
+from .ab_go_benchmark_command import AbGoBenchmarkCommand
 from ...common.py_common.logging import HoornLogger
-from ...benchmark_command_interface import IBenchmarkCommand
 from .go_command_context import GoCommandContext
-from ...common.py_common.user_input.user_input_helper import UserInputHelper
+from ...utils.command_tools import CommandTools
 
 
-class StandardBenchmarkCommand(IBenchmarkCommand):
-	def __init__(self, logger: HoornLogger, file_handler: FileHandler, command_handler: CommandHelper, user_input_helper: UserInputHelper, command_context: GoCommandContext):
-		self._file_helper: FileHandler = file_handler
-		self._command_handler: CommandHelper = command_handler
-		self._user_input_helper: UserInputHelper = user_input_helper
-		self._command_context: GoCommandContext = command_context
-
-		super().__init__(logger, is_child=True)
+class StandardBenchmarkCommand(AbGoBenchmarkCommand):
+	def __init__(self, logger: HoornLogger, command_tools: CommandTools, command_context: GoCommandContext):
+		super().__init__(logger, command_tools, command_context)
 
 	def _validate_files(self, go_files: List[Path]) -> bool:
 		if len(go_files) == 0:
@@ -30,7 +22,7 @@ class StandardBenchmarkCommand(IBenchmarkCommand):
 
 	def run(self) -> None:
 		async def run_benchmark():
-			go_files = self._file_helper.get_children_paths(self._command_context.benchmarks_path, extension=".go")
+			go_files = self._file_handler.get_children_paths(self._command_context.benchmarks_path, extension=".go")
 
 			if not self._validate_files(go_files):
 				return
@@ -40,35 +32,35 @@ class StandardBenchmarkCommand(IBenchmarkCommand):
 
 			benchmark_file = self._command_context.benchmarks_path.joinpath(choice.name)
 
+			cpu_prof_path = self._resolve_benchmark_path(output_name, ".cpu.prof")
+			mem_prof_path = self._resolve_benchmark_path(output_name, ".mem.prof")
+			exe_path = self._resolve_benchmark_path(output_name, ".exe")
+			results_path = self._resolve_benchmark_path(output_name)
+
 			desired_count = self._user_input_helper.get_user_input("Enter the number of times to run the benchmark (leave empty for 10):", expected_response_type=str, validator_func=lambda x: [True, ""])
 			desired_count = int(desired_count) if desired_count else 10
 
 			commands = [
 				"test",
-				f"\"{benchmark_file.__str__()}\"",
+				str(benchmark_file),
 				"-run=^$",
 				f"-count={desired_count}",
 				"-bench=.",
 				"-benchmem",
-				"-cpuprofile",
-				f"\"{self._command_context.benchmark_results_path.joinpath(f'{output_name}.cpu.prof').resolve()}\"",
-				"-memprofile",
-				f"\"{self._command_context.benchmark_results_path.joinpath(f'{output_name}.mem.prof').resolve()}\"",
-				f"-o=\"{self._command_context.benchmark_results_path.joinpath(f'{output_name}.exe').resolve()}\"",
-				f"> \"{self._command_context.benchmark_results_path.joinpath(f'{output_name}.txt').resolve()}\""
+				"-cpuprofile", str(cpu_prof_path),
+				"-memprofile", str(mem_prof_path),
+				f"-o={exe_path}",
+				f"> {results_path}"
 			]
 
 			commands_2 = [
-				"tool",
-				"pprof",
-				f"\"{self._command_context.benchmark_results_path.joinpath(f'{output_name}.exe').resolve()}\"",
-				f"\"{self._command_context.benchmark_results_path.joinpath(f'{output_name}.cpu.prof')}\""
+				"tool", "pprof", str(exe_path), str(cpu_prof_path)
 			]
 
 			os.chdir(self._command_context.module_root)
 
-			await self._command_handler.execute_command_v2_async("go", commands, hide_console=False, keep_open=False)
-			await self._command_handler.execute_command_v2_async("go", commands_2, hide_console=False, keep_open=False)
+			await self._execute_go_command_async(commands)
+			await self._execute_go_command_async(commands_2)
 
 		asyncio.run(run_benchmark())
 

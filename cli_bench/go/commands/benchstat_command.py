@@ -2,27 +2,22 @@ import asyncio
 from pathlib import Path
 from typing import List
 
-from ...benchmark_command_interface import IBenchmarkCommand
-from ...common.py_common.command_handling import CommandHelper
-from ...common.py_common.handlers import FileHandler
+from .ab_go_benchmark_command import AbGoBenchmarkCommand
 from ...common.py_common.logging import HoornLogger
 from .go_command_context import GoCommandContext
+from ...utils.command_tools import CommandTools
 
 
-class BenchstatCommand(IBenchmarkCommand):
-	def __init__(self, logger: HoornLogger, file_handler: FileHandler, command_handler: CommandHelper, command_context: GoCommandContext):
-		self._file_helper: FileHandler = file_handler
-		self._command_handler: CommandHelper = command_handler
-		self._command_context: GoCommandContext = command_context
-
-		super().__init__(logger, is_child=True)
+class BenchstatCommand(AbGoBenchmarkCommand):
+	def __init__(self, logger: HoornLogger, command_tools: CommandTools, command_context: GoCommandContext):
+		super().__init__(logger, command_tools, command_context)
 
 	def run(self) -> None:
 		async def run_benchstat_compare():
-			results: List[Path] = self._file_helper.get_children_paths(self._command_context.benchmark_results_path, extension=".txt")
+			results: List[Path] = self._file_handler.get_children_paths(self._command_context.benchmark_results_path, extension=".txt")
 
-			if len(results) == 0:
-				print("No benchmark results found in the results directory.")
+			if not results:
+				print("No benchmark results found.")
 				return
 
 			results.sort(key=lambda x: x.name)
@@ -43,18 +38,17 @@ class BenchstatCommand(IBenchmarkCommand):
 
 			results: List[Path] = [results[i] for i in choices]
 
-			with open(self._command_context.benchmark_interpretations_path.joinpath(f"{results[0].stem}-{results[-1].stem}.txt"), "w+") as tmpfile:
-				temp_file_path = tmpfile.name
+			output_path = self._resolve_benchmark_path(f"{results[0].stem}-{results[-1].stem}")
 
-			command = [f"O=\"{results[0].resolve()}\""]
+			command = [f"O={results[0]}"]
 
 			for i in range(1, len(results)):
-				command.append(f"N_{i}=\"{results[i].resolve()}\"")
+				command.append(f"N_{i}={results[i]}")
 
-			command.append(f"> \"{temp_file_path}\"")
+			command.append(f"> {output_path}")
 
-			await self._command_handler.execute_command_v2_async("benchstat", command, hide_console=False, keep_open=False)
+			await self._execute_go_command_async(command, binary_override="benchstat")
 
-			print(f"Benchstat comparison (cleaned) written to: {temp_file_path}")
+			print(f"Benchstat comparison written to: {output_path}")
 
 		asyncio.run(run_benchstat_compare())
