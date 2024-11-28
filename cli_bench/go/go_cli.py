@@ -7,6 +7,7 @@ from .commands.go_command_context import GoCommandContext
 from .commands.pprof_interactable_command import PprofInteractableCommand
 from .commands.pprof_web_command import PprofWebCommand
 from .commands.standard_benchmark_command import StandardBenchmarkCommand
+from ..common.py_common.user_input.user_input_helper import UserInputHelper
 
 
 class GolangCLI:
@@ -16,12 +17,13 @@ class GolangCLI:
 
 		_file_handler = FileHandler()
 		_command_helper = CommandHelper(self._logger)
+		_user_input_helper = UserInputHelper(self._logger)
 
 		self._commands_to_add = {
 			0: {
 				"keys": ["benchmark", "bm"],
 				"description": "Starts the benchmarking suite.",
-				"command": StandardBenchmarkCommand(self._logger, _file_handler, _command_helper, command_context).run
+				"command": StandardBenchmarkCommand(self._logger, _file_handler, _command_helper, _user_input_helper, command_context).run
 			},
 			1: {
 				"keys": ["benchstat-compare", "bsc"],
