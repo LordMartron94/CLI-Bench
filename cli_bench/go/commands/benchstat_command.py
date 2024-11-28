@@ -39,13 +39,14 @@ class BenchstatCommand(AbGoBenchmarkCommand):
 			results: List[Path] = [results[i] for i in choices]
 
 			output_path = self._resolve_benchmark_path(f"{results[0].stem}-{results[-1].stem}")
+			output_path = self._command_context.benchmark_interpretations_path.joinpath(output_path.stem + ".txt")
 
-			command = [f"O={results[0]}"]
+			command = [f"O=\"{results[0]}\""]
 
 			for i in range(1, len(results)):
-				command.append(f"N_{i}={results[i]}")
+				command.append(f"N_{i}=\"{results[i]}\"")
 
-			command.append(f"> {output_path}")
+			command.append(f"> \"{output_path}\"")
 
 			await self._execute_go_command_async(command, binary_override="benchstat")
 

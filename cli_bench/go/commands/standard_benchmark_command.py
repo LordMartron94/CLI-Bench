@@ -42,19 +42,19 @@ class StandardBenchmarkCommand(AbGoBenchmarkCommand):
 
 			commands = [
 				"test",
-				str(benchmark_file),
+				f"\"{str(benchmark_file)}\"",
 				"-run=^$",
 				f"-count={desired_count}",
 				"-bench=.",
 				"-benchmem",
-				"-cpuprofile", str(cpu_prof_path),
-				"-memprofile", str(mem_prof_path),
-				f"-o={exe_path}",
-				f"> {results_path}"
+				"-cpuprofile", f"\"{str(cpu_prof_path)}\"",
+				"-memprofile", f"\"{str(mem_prof_path)}\"",
+				f"-o=\"{exe_path}\"",
+				f"> \"{results_path}\""
 			]
 
 			commands_2 = [
-				"tool", "pprof", str(exe_path), str(cpu_prof_path)
+				"tool", "pprof", f"\"{str(exe_path)}\"", f"\"{str(cpu_prof_path)}\""
 			]
 
 			os.chdir(self._command_context.module_root)

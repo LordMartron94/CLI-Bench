@@ -16,7 +16,7 @@ class PprofWebCommand(AbGoBenchmarkCommand):
 		cpu_result = self._resolve_benchmark_path(executable.stem, ".cpu.prof")
 
 		commands = [
-			"tool", "pprof", "-http=\":8080\"", str(executable), str(cpu_result)
+			"tool", "pprof", "-http=\":8080\"", f"\"{str(executable)}\"", f"\"{str(cpu_result)}\""
 		]
 
 		self._execute_go_command(commands, hide_console=False, keep_open=True, shell=True)

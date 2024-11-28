@@ -26,7 +26,7 @@ class PprofInteractableCommand(AbGoBenchmarkCommand):
 		cpu_result = self._resolve_benchmark_path(executable.stem, ".cpu.prof")
 
 		commands = [
-			"tool", "pprof", str(executable), str(cpu_result)
+			"tool", "pprof", f"\"{str(executable)}\"", f"\"{str(cpu_result)}\""
 		]
 
 		self._command_handler.execute_command_v2("go", commands, shell=True, hide_console=False, keep_open=True)
