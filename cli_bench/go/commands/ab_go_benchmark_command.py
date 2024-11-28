@@ -42,7 +42,7 @@ class AbGoBenchmarkCommand(IBenchmarkCommand):
 		altered_prompt_message = ""
 
 		for i, exe in enumerate(exes):
-			altered_prompt_message += f"{i}. {exe.name}"
+			altered_prompt_message += f"{i}. {exe.name}\n"
 
 		altered_prompt_message += prompt_message
 
