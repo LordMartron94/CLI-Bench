@@ -127,3 +127,5 @@ dmypy.json
 .idea
 .vale.ini
 /.vale-styles/
+
+test.py
