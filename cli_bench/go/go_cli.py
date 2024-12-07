@@ -1,3 +1,5 @@
+import os
+
 from ..common.py_common.cli_framework import CommandLineInterface
 from ..common.py_common.logging import HoornLogger
 from .commands.benchstat_command import BenchstatCommand
@@ -14,6 +16,10 @@ class GolangCLI:
 		self._logger: HoornLogger = logger
 
 		_command_tools: CommandTools = CommandTools(self._logger)
+
+		# Initialize directories to avoid "system cannot find the path" errors.
+		os.makedirs(command_context.benchmark_results_path, exist_ok=True)
+		os.makedirs(command_context.benchmark_interpretations_path, exist_ok=True)
 
 		self._commands_to_add = {
 			0: {
