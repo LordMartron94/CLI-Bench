@@ -1,6 +1,6 @@
 from datetime import datetime
 from pathlib import Path
-from typing import Callable, Dict, TypeVar, Tuple
+from typing import Callable, Dict, TypeVar, Tuple, List
 
 from viztracer import VizTracer
 
@@ -38,11 +38,11 @@ def run_with_profiling(func: Callable, category: str, benchmark_dir: Path) -> No
 
 
 class PythonProfileCommand(IBenchmarkCommand):
-    def __init__(self, logger: HoornLogger, profile_options: Dict[str, Callable], benchmark_dir: Path) -> None:
+    def __init__(self, logger: HoornLogger, profile_options: List[Callable], benchmark_dir: Path) -> None:
         super().__init__(logger, is_child=True)
-        self._separator: str = f"Python"
+        self._separator: str = f"Benchmarking.Python"
 
-        self._profile_options: Dict[str, Callable] = profile_options
+        self._profile_options: List[Callable] = profile_options
         self._benchmark_dir = benchmark_dir
         self._user_input_helper: UserInputHelper = UserInputHelper(logger)
 
@@ -59,7 +59,8 @@ class PythonProfileCommand(IBenchmarkCommand):
         prompt: str = "Profiling Options:"
 
         lookup: Dict[int, Tuple[str, Callable]] = {}
-        for i, (name, fn) in enumerate(self._profile_options.items()):
+        for i, fn in enumerate(self._profile_options):
+            name = fn.__name__
             prompt += f"\n\t- {i + 1}) '{name}'"
             lookup[i+1] = (name, fn)
 
