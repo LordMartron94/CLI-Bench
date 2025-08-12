@@ -52,8 +52,8 @@ class PythonCLI:
 
     def start(self) -> None:
         """Starts the main suite selection loop."""
-        self._logger.info("Welcome to the Python Benchmarking Tool.", separator=self._separator)
-        self._logger.info("Type '/suite' or '/s' to select a benchmark suite.", separator=self._separator)
+        print("Welcome to the Python Benchmarking Tool.")
+        print("Type '/suite' or '/s' to select a benchmark suite.")
         self._main_cli.start_listen_loop()
 
     def exit(self) -> None:
