@@ -86,8 +86,8 @@ class PythonCLI:
             selected_suite = self._context.suites[choice]
             self._launch_suite_cli(selected_suite)
 
-        except (ValueError, TypeError, KeyboardInterrupt):
-            self._logger.info("\nSuite selection cancelled. Returning to main menu.", separator=self._separator)
+        except KeyboardInterrupt:
+            self._logger.info("Suite selection cancelled. Returning to main menu.", separator=self._separator)
             return
 
     def _launch_suite_cli(self, suite: BenchmarkSuite) -> None:
