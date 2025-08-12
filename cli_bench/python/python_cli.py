@@ -91,7 +91,9 @@ class PythonCLI:
 
     def _launch_suite_cli(self, suite: BenchmarkSuite) -> None:
         """Creates and runs a temporary sub-menu tailored to the selected suite."""
-        self._logger.info(f"--- Entering Suite: {suite.name} ---", separator=self._separator)
+        msg = f"--- Entering Suite: {suite.name} ---"
+        print(msg)
+        self._logger.info(msg, separator=self._separator)
 
         suite_results_dir = self._context.benchmark_root_dir / suite.name
 
@@ -118,4 +120,6 @@ class PythonCLI:
 
         suite_cli.start_listen_loop()
 
-        self._logger.info(f"--- Exiting Suite: {suite.name} ---", separator=self._separator)
+        msg = f"--- Exiting Suite: {suite.name} ---"
+        print(msg)
+        self._logger.info(msg, separator=self._separator)
