@@ -2,7 +2,7 @@ import json
 import re
 import statistics
 import timeit
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Callable, List
 
@@ -50,10 +50,8 @@ class PythonBenchmarkCommand(IBenchmarkCommand):
             self._execute_and_save_benchmark(func, sanitized_name, output_path)
 
     def _execute_and_save_benchmark(self, fn: Callable, name: str, output_path: Path) -> None:
-        """Runs the benchmark, prints stats, and saves the detailed results."""
         self._logger.info(f"Running benchmark for '{name}'...", separator=self._separator)
 
-        # --- The core logic remains the same ---
         timings = timeit.repeat(stmt=fn, repeat=self._repeat, number=self._number)
         timings_per_op = [t / self._number for t in timings]
 
@@ -67,7 +65,7 @@ class PythonBenchmarkCommand(IBenchmarkCommand):
         results_data = {
             "metadata": {
                 "name": name,
-                "timestamp_utc": datetime.utcnow().isoformat(),
+                "timestamp_utc": datetime.now(UTC).isoformat(),
                 "repeat": self._repeat,
                 "number_per_repeat": self._number,
             },

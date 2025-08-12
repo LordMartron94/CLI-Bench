@@ -90,7 +90,7 @@ class PythonCompareCommand(IBenchmarkCommand):
         baseline_mean = baseline_data["stats"]["mean"]
         baseline_timings = baseline_data["timings"]
 
-        # --- Print Header (with new "Factor" column) ---
+        # --- Print Header ---
         header = f"{'Benchmark':<30} {'Time/op':>15} {'Delta':>15} {'Factor':>15} {'P-value':>12}"
         self._logger.info("-" * len(header), separator=self._separator)
         self._logger.info(header, separator=self._separator)

@@ -58,6 +58,7 @@ class PythonCLI:
 
     def exit(self) -> None:
         """Exits the main CLI loop."""
+        print("Exiting Python Benchmarking Tool.")
         self._main_cli.exit_conversation_loop()
 
     def _select_and_launch_suite(self) -> None:
