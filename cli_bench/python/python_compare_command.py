@@ -132,7 +132,7 @@ class PythonCompareCommand(IBenchmarkCommand):
             comp_data = item["data"]
             comp_name = item["name"]
             comp_mean = comp_data["stats"]["mean"]
-            comp_std = comp_data["stats"].get("std", 0)
+            comp_std = comp_data["stats"].get("stdev", 0)
             comp_timings = comp_data["timings"]
             comp_n = len(comp_timings)
 
