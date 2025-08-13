@@ -1,8 +1,11 @@
+import csv
 import json
 from pathlib import Path
 from typing import List, Dict, Any
 
+from scipy import stats
 from scipy.stats import ttest_ind
+from tabulate import tabulate
 
 from ..benchmark_command_interface import IBenchmarkCommand
 from ..common.py_common.logging import HoornLogger
@@ -84,51 +87,105 @@ class PythonCompareCommand(IBenchmarkCommand):
 
     # noinspection t
     def _compare_and_print(self, baseline: Dict[str, Any], comparisons: List[Dict[str, Any]]) -> None:
-        """Performs statistical comparison against a baseline and prints a formatted table."""
+        """
+        Performs statistical comparison against a baseline and prints a formatted table.
+        Optionally exports results to a CSV file.
+        """
         baseline_data = baseline["data"]
         baseline_name = baseline["name"]
         baseline_mean = baseline_data["stats"]["mean"]
+        baseline_std = baseline_data["stats"].get("stdev", 0)
         baseline_timings = baseline_data["timings"]
+        baseline_n = len(baseline_timings)
 
-        # --- Print Header ---
-        header = f"{'Benchmark':<30} {'Time/op':>15} {'Delta':>15} {'Factor':>15} {'P-value':>12}"
-        self._logger.info("-" * len(header), separator=self._separator)
-        self._logger.info(header, separator=self._separator)
-        self._logger.info("-" * len(header), separator=self._separator)
+        # --- Dynamic Time Unit Selection ---
+        def format_time(seconds: float) -> tuple[str, float]:
+            if seconds >= 1:
+                return f"{seconds:.2f}s", 1
+            elif seconds >= 1e-3:
+                return f"{seconds * 1e3:.2f}ms", 1e3
+            else:
+                return f"{seconds * 1e6:.2f}µs", 1e6
 
-        # --- Print Baseline Row ---
-        baseline_time_str = f"{baseline_mean * 1e6:.2f}µs"
-        baseline_row = f"{baseline_name:<30} {baseline_time_str:>15} {'(baseline)':>15} {'':>15} {'':>12}"
-        self._logger.info(baseline_row, separator=self._separator)
+        # --- Calculate Baseline Confidence Interval ---
+        confidence_level = 0.95
+        if baseline_n > 1 and baseline_std > 0:
+            sem = baseline_std / (baseline_n ** 0.5)
+            ci_margin = stats.t.ppf((1 + confidence_level) / 2, baseline_n - 1) * sem
+            baseline_ci_lower = baseline_mean - ci_margin
+            baseline_ci_upper = baseline_mean + ci_margin
+        else:
+            baseline_ci_lower, baseline_ci_upper = baseline_mean, baseline_mean
 
-        # --- Print Comparison Rows ---
+        # --- Prepare Table Data ---
+        table_data = []
+        table_headers = ["Benchmark", "Time", "Std Dev", "Delta", "Factor", "P-value", "Signif", "95% CI"]
+
+        # --- Baseline Row ---
+        baseline_time_str, _ = format_time(baseline_mean)
+        baseline_std_str = format_time(baseline_std)[0]
+        baseline_ci_str = f"[{format_time(baseline_ci_lower)[0]}, {format_time(baseline_ci_upper)[0]}]"
+        table_data.append([baseline_name, baseline_time_str, baseline_std_str, "(baseline)", "", "", "", baseline_ci_str])
+
+        # --- Comparison Rows ---
         for item in comparisons:
             comp_data = item["data"]
             comp_name = item["name"]
             comp_mean = comp_data["stats"]["mean"]
+            comp_std = comp_data["stats"].get("std", 0)
             comp_timings = comp_data["timings"]
+            comp_n = len(comp_timings)
 
             _, p_value = ttest_ind(baseline_timings, comp_timings, equal_var=False)
-            percent_change = ((comp_mean - baseline_mean) / baseline_mean) * 100
+            percent_change = ((comp_mean - baseline_mean) / baseline_mean) * 100 if baseline_mean > 0 else 0
 
-            # --- Calculate and Format Delta Factor ---
-            if baseline_mean > 0 and comp_mean > 0:
-                if comp_mean >= baseline_mean:
-                    factor = comp_mean / baseline_mean
-                    factor_str = f"{factor:.2f}x slower"
-                else:
-                    factor = baseline_mean / comp_mean
-                    factor_str = f"{factor:.2f}x faster"
+            if comp_n > 1 and comp_std > 0:
+                sem = comp_std / (comp_n ** 0.5)
+                ci_margin = stats.t.ppf((1 + confidence_level) / 2, comp_n - 1) * sem
+                comp_ci_lower = comp_mean - ci_margin
+                comp_ci_upper = comp_mean + ci_margin
             else:
-                factor_str = "n/a"
+                comp_ci_lower, comp_ci_upper = comp_mean, comp_mean
 
-            # --- Format other result strings ---
-            time_str = f"{comp_mean * 1e6:.2f}µs"
-            delta_str = f"{percent_change:+.2f}%"
+            signif = "***" if p_value < 0.001 else "**" if p_value < 0.01 else "*" if p_value < 0.05 else ""
+            time_str, _ = format_time(comp_mean)
+            std_str = format_time(comp_std)[0]
+            delta_str = f"{percent_change:+.2f}%" if baseline_mean > 0 else "n/a"
+            factor_str = "n/a" if baseline_mean <= 0 or comp_mean <= 0 else (
+                f"{comp_mean / baseline_mean:.2f}x slower" if comp_mean >= baseline_mean else
+                f"{baseline_mean / comp_mean:.2f}x faster"
+            )
             pval_str = f"{p_value:.3f}"
-            significance = "~" if p_value > 0.05 else " "
+            ci_str = f"[{format_time(comp_ci_lower)[0]}, {format_time(comp_ci_upper)[0]}]"
 
-            row = f"{comp_name:<30} {time_str:>15} {delta_str:>14}{significance} {factor_str:>15} {pval_str:>12}"
-            self._logger.info(row, separator=self._separator)
+            table_data.append([comp_name, time_str, std_str, delta_str, factor_str, pval_str, signif, ci_str])
 
-        self._logger.info("-" * len(header), separator=self._separator)
+        # --- Print Table ---
+        table = tabulate(table_data, headers=table_headers, tablefmt="plain", numalign="right", stralign="left")
+        separator = "-" * max(len(line) for line in table.split("\n"))
+        self._logger.info(separator, separator=self._separator)
+        for line in table.split("\n"):
+            self._logger.info(line, separator=self._separator)
+        self._logger.info(separator, separator=self._separator)
+
+        # --- Summary ---
+        fastest = min(comparisons + [baseline], key=lambda x: x["data"]["stats"]["mean"])
+        slowest = max(comparisons + [baseline], key=lambda x: x["data"]["stats"]["mean"])
+        self._logger.info(
+            f"Summary: Fastest: {fastest['name']} ({format_time(fastest['data']['stats']['mean'])[0]}), "
+            f"Slowest: {slowest['name']} ({format_time(slowest['data']['stats']['mean'])[0]})",
+            separator=self._separator
+        )
+
+        # --- CSV Export Option ---
+        export_csv = self._user_input_helper.get_user_input(
+            "Export results to CSV? (y/n): ", expected_response_type=str,
+            validator_func=lambda x: (x.lower() in ["y", "n"], "Enter 'y' or 'n'.")
+        )
+        if export_csv.lower() == "y":
+            csv_path = self._category_dir / f"comparison_{baseline_name}_results.csv"
+            with open(csv_path, "w", newline="") as f:
+                writer = csv.writer(f)
+                writer.writerow(table_headers)
+                writer.writerows(table_data)
+            self._logger.info(f"Results exported to {csv_path}", separator=self._separator)
