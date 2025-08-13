@@ -1,6 +1,6 @@
 import dataclasses
 from pathlib import Path
-from typing import Callable, List
+from typing import Callable, List, Tuple
 
 from .python_benchmark_command import PythonBenchmarkCommand
 from .python_compare_command import PythonCompareCommand
@@ -15,6 +15,8 @@ class BenchmarkSuite:
     """Represents a named group of functions to be benchmarked together."""
     name: str
     functions: List[Callable]
+    settings: Tuple[int, int]
+    """(repetitions, calls)"""
 
 
 @dataclasses.dataclass
@@ -23,12 +25,6 @@ class PythonCliContext:
     benchmark_root_dir: Path
     suites: List[BenchmarkSuite]
     exit_command: Callable
-
-    bench_repeat: int = 30
-    """The number of times to repeat each benchmark."""
-
-    bench_number: int = 1000
-    """The number of times the function is executed within each benchmark iteration."""
 
 
 class PythonCLI:
@@ -110,8 +106,8 @@ class PythonCLI:
             self._logger,
             benchmark_functions=suite.functions,
             category_dir=suite_results_dir,
-            repeat=self._context.bench_repeat,
-            number=self._context.bench_number
+            repeat=suite.settings[0],
+            number=suite.settings[1]
         )
         compare_command = PythonCompareCommand(self._logger, suite_results_dir)
 
