@@ -52,6 +52,9 @@ class PythonBenchmarkCommand(IBenchmarkCommand):
     def _execute_and_save_benchmark(self, fn: Callable, name: str, output_path: Path) -> None:
         self._logger.info(f"Running benchmark for '{name}'...", separator=self._separator)
 
+        self._logger.trace(f"Performing warm-up run for '{name}'...", separator=self._separator)
+        fn()
+
         timings = timeit.repeat(stmt=fn, repeat=self._repeat, number=self._number)
         timings_per_op = [t / self._number for t in timings]
 
