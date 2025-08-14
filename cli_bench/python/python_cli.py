@@ -18,6 +18,8 @@ class BenchmarkSuite:
     settings: Tuple[int, int]
     """(repetitions, calls)"""
 
+    prepare_func: Callable[[str], None]
+
 
 @dataclasses.dataclass
 class PythonCliContext:
@@ -39,7 +41,6 @@ class PythonCLI:
         self._main_cli = CommandLineInterface(logger, exit_command=context.exit_command, log_module_sep=self._separator)
         self._user_input_helper = UserInputHelper(logger)
 
-        # The main CLI has only one job: to let the user select a suite.
         self._main_cli.add_command(
             keys=["suite", "s"],
             description="Select a benchmark suite to work with.",
@@ -91,6 +92,8 @@ class PythonCLI:
         msg = f"--- Entering Suite: {suite.name} ---"
         print(msg)
         self._logger.info(msg, separator=self._separator)
+
+        suite.prepare_func(suite.name)
 
         suite_results_dir = self._context.benchmark_root_dir / suite.name
 
