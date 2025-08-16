@@ -15,10 +15,13 @@ class BenchmarkSuite:
     """Represents a named group of functions to be benchmarked together."""
     name: str
     functions: List[Callable]
-    settings: Tuple[int, int]
-    """(repetitions, calls)"""
 
     prepare_func: Callable[[str], None]
+
+    settings: Tuple[int, int | str, int, bool, bool, int] = (
+        10, "auto", 1, True, True, 5
+    )
+    """(repetitions, calls [number or 'auto'], threads, pin affinity, measure memory, memory probe runs)"""
 
 
 @dataclasses.dataclass
@@ -110,7 +113,11 @@ class PythonCLI:
             benchmark_functions=suite.functions,
             category_dir=suite_results_dir,
             repeat=suite.settings[0],
-            number=suite.settings[1]
+            number=suite.settings[1],
+            threads=suite.settings[2],
+            pin_affinity=suite.settings[3],
+            measure_memory=suite.settings[4],
+            mem_probe_runs=suite.settings[5],
         )
         compare_command = PythonCompareCommand(self._logger, suite_results_dir)
 
